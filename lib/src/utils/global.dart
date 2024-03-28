@@ -13,4 +13,8 @@ abstract class AppConstant{
         textColor: Colors.white,
         fontSize: 14.sp);
   }
+
+
+  //IMAGE PATH
+  static String  imagePath = "assets/images";
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -9,21 +10,19 @@ import 'package:what_the_crush_app/src/features/HomeScreen/GangScreen/view/gangS
 import 'package:what_the_crush_app/src/features/HomeScreen/WallScreens/mainWallScreen/view/mainWallScreen.dart';
 import 'package:what_the_crush_app/src/features/Providers/navbar_provider.dart';
 import 'package:what_the_crush_app/src/helpers/Colors_Gradient.dart/Appcolors.dart';
+import 'package:what_the_crush_app/src/utils/global.dart';
 
-class BottomNavBar extends StatefulWidget {
-  @override
-  _BottomNavBarState createState() => _BottomNavBarState();
-}
 
-class _BottomNavBarState extends State<BottomNavBar> {
-  int pageIndex = 0;
 
-  final pages = [
-    MainWallScreen(),
-    CrushScreen(),
-    GangScreen(),
-    CrushMakingScreen(),
-  ];
+class BottomNavBar extends ConsumerWidget {
+  
+
+  // final pages = [
+  //   MainWallScreen(),
+  //   CrushScreen(),
+  //   GangScreen(),
+  //   CrushMakingScreen(),
+  // ];
   // late BottomProviderController _bottomProviderController;
 
   // @override
@@ -33,22 +32,20 @@ class _BottomNavBarState extends State<BottomNavBar> {
   // }
 
   @override
-  Widget build(BuildContext context) {
-    final bottomProvider = Provider.of<BottomProviderController>(context);
-    return Consumer<BottomProviderController>(
-        builder: (context, bottomProvider, child) {
-      return Container(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bottomIndex = ref.watch(bottomIndexProvider);
+    return Container(
           color: Colors.transparent,
           width: double.infinity,
           child: Scaffold(
             backgroundColor: AppColors.white,
-            body: pages[bottomProvider.navigationBarIndexValue],
-            bottomNavigationBar: buildnavbar(context, bottomProvider),
+            body: NavigationListDataModel.list[bottomIndex].child,
+            bottomNavigationBar: buildnavbar(ref, bottomIndex),
           ));
-    });
+    
   }
 
-  buildnavbar(BuildContext context, BottomProviderController bottomProvider) {
+  buildnavbar(WidgetRef ref, int selectIndex) {
     return Container(
       height: 60.h,
       decoration: BoxDecoration(
@@ -59,52 +56,21 @@ class _BottomNavBarState extends State<BottomNavBar> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: navbarIcons(
-                onpress: () {
-                  setState(() {
-                    bottomProvider.navBarChange(0);
-                  });
-                },
-                img: 'assets/images/wall_default.png',
-                index: 0,
-                bottomcontroller: bottomProvider),
-          ),
-          Expanded(
-            child: navbarIcons(
-                onpress: () {
-                  setState(() {
-                    bottomProvider.navBarChange(1);
-                  });
-                },
-                img: 'assets/images/crush_default.png',
-                index: 1,
-                bottomcontroller: bottomProvider),
-          ),
-          Expanded(
-            child: navbarIcons(
-                onpress: () {
-                  setState(() {
-                    bottomProvider.navBarChange(2);
-                  });
-                },
-                img: 'assets/images/gang_default.png',
-                index: 2,
-                bottomcontroller: bottomProvider),
-          ),
-          Expanded(
-            child: navbarIcons(
-                onpress: () {
-                  setState(() {
-                    bottomProvider.navBarChange(3);
-                  });
-                },
-                img: 'assets/images/crush_making_default.png',
-                index: 3,
-                bottomcontroller: bottomProvider),
-          )
-        ],
+        children: List.generate(NavigationListDataModel.list.length, (index) => GestureDetector(
+      onTap: () {
+        ref.read(bottomIndexProvider.notifier).navBarChange(index);
+        // onpress();
+      },
+      child: Container(
+        child: Image.asset(
+          NavigationListDataModel.list[index].image,
+          scale: 1,
+          color: selectIndex == index
+              ? AppColors.purpleP500
+              : AppColors.textInactive,
+        ),
+      ),
+    )),
       ),
 
       // currentIndex: _bottomProviderController.navigationBarIndexValue,
@@ -150,35 +116,61 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 }
 
-class navbarIcons extends StatelessWidget {
-  final BottomProviderController bottomcontroller;
-  final String img;
-  VoidCallback onpress;
-  final int index; // New index property to specify the associated index
-  navbarIcons({
-    Key? key,
-    required this.onpress,
-    required this.img,
-    required this.index,
-    required this.bottomcontroller,
-  }) : super(key: key);
+// class navbarIcons extends StatelessWidget {
+//   final int bottomcontroller;
+//   final String img;
+//   VoidCallback onpress;
+//   final int index; // New index property to specify the associated index
+//   navbarIcons({
+//     Key? key,
+//     required this.onpress,
+//     required this.img,
+//     required this.index,
+//     required this.bottomcontroller,
+//   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        bottomcontroller.navBarChange(index);
-        onpress();
-      },
-      child: Container(
-        child: Image.asset(
-          img,
-          scale: 1,
-          color: bottomcontroller.navigationBarIndexValue == index
-              ? AppColors.purpleP500
-              : AppColors.textInactive,
-        ),
-      ),
-    );
-  }
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: () {
+//         bottomcontroller.navBarChange(index);
+//         onpress();
+//       },
+//       child: Container(
+//         child: Image.asset(
+//           img,
+//           scale: 1,
+//           color: bottomcontroller.navigationBarIndexValue == index
+//               ? AppColors.purpleP500
+//               : AppColors.textInactive,
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+class NavigationListDataModel{
+  final String image;
+  final Widget child;
+
+  const NavigationListDataModel({required this.image, required this.child});
+
+  static  List<NavigationListDataModel> list = [
+    NavigationListDataModel(
+      image: "${AppConstant.imagePath}/wall_default.png",
+      child: MainWallScreen(),
+    ),
+    NavigationListDataModel(
+      image: "${AppConstant.imagePath}/crush_default.png",
+      child: CrushScreen(),
+    ),
+    NavigationListDataModel(
+      image: "${AppConstant.imagePath}/gang_default.png",
+      child: GangScreen(),
+    ),
+    NavigationListDataModel(
+      image: "${AppConstant.imagePath}/crush_making_default.png",
+      child: CrushMakingScreen(),
+    ),
+  ];
 }

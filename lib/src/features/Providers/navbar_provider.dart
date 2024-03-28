@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import '../../../export_all.dart';
 
 class BottomProviderController with ChangeNotifier {
   late int _navigationBarIndexValue;
@@ -14,3 +14,12 @@ class BottomProviderController with ChangeNotifier {
     notifyListeners();
   }
 }
+
+class BottomIndexNotifer extends StateNotifier<int> {
+  BottomIndexNotifer(): super(0);
+  void navBarChange(int value) {
+   state = value;
+  }
+}
+
+final bottomIndexProvider = StateNotifierProvider<BottomIndexNotifer, int>((ref) => BottomIndexNotifer());

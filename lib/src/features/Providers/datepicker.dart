@@ -2,7 +2,9 @@
 // import 'package:provider/provider.dart';
 
 // final dateOfBirthProvider = StateProvider<DateTime>((ref) => DateTime.now());
-import 'package:flutter/material.dart';
+
+
+import '../../../export_all.dart';
 
 class DateOfBirthProvider extends ChangeNotifier {
   DateTime _dateOfBirth = DateTime.now();
@@ -14,3 +16,16 @@ class DateOfBirthProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+class DateNotifier extends StateNotifier<DateTime> {
+  DateNotifier(): super(DateTime.now());
+
+   void setDateOfBirth(DateTime newDate) {
+    state = newDate;
+   
+  }
+  
+}
+ final dateProvider = StateNotifierProvider<DateNotifier, DateTime>((ref) {
+  return DateNotifier();
+});
